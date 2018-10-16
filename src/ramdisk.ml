@@ -98,3 +98,11 @@ let resize x new_size_sectors =
   Lwt.return (Ok ())
 
 let flush _ = Lwt.return (Ok ())
+
+let rec discard x first n =
+  if n <= 0L then
+    Lwt.return @@ Ok ()
+  else begin
+    x.map <- Int64Map.remove first x.map;
+    discard x (Int64.succ first) (Int64.pred n)
+  end
