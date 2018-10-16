@@ -1,6 +1,8 @@
 all:
-	ocaml pkg/pkg.ml build --tests true
-	ocaml pkg/pkg.ml test
+	dune build
+	dune runtest
 
 clean:
-	ocaml pkg/pkg.ml clean
+	rm -rf _build
+
+.PHONY: all clean
