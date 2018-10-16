@@ -58,22 +58,22 @@ let rec read x sector_start buffers = match buffers with
   | [] -> Lwt.return (Ok ())
   | b :: bs ->
     if Int64Map.mem sector_start x.map
-    then Cstruct.blit (Int64Map.find sector_start x.map) 0 b 0 512
-    else Cstruct.(memset (sub b 0 512) 0);
+    then Cstruct.blit (Int64Map.find sector_start x.map) 0 b 0 x.info.sector_size
+    else Cstruct.(memset (sub b 0 x.info.sector_size) 0);
     read x (Int64.succ sector_start)
-      (if Cstruct.len b > 512
-       then (Cstruct.shift b 512) :: bs
+      (if Cstruct.len b > x.info.sector_size
+       then (Cstruct.shift b x.info.sector_size) :: bs
        else bs)
 
 let rec write x sector_start buffers = match buffers with
   | [] -> Lwt.return (Ok ())
   | b :: bs ->
-    if Cstruct.len b = 512 then begin
+    if Cstruct.len b = x.info.sector_size then begin
       x.map <- Int64Map.add sector_start b x.map;
       write x (Int64.succ sector_start) bs
     end else begin
-      x.map <- Int64Map.add sector_start (Cstruct.sub b 0 512) x.map;
-      write x (Int64.succ sector_start) (Cstruct.shift b 512 :: bs)
+      x.map <- Int64Map.add sector_start (Cstruct.sub b 0 x.info.sector_size) x.map;
+      write x (Int64.succ sector_start) (Cstruct.shift b x.info.sector_size :: bs)
     end
 
 let seek_mapped t from =
