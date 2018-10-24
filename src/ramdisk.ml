@@ -106,3 +106,9 @@ let rec discard x first n =
     x.map <- Int64Map.remove first x.map;
     discard x (Int64.succ first) (Int64.pred n)
   end
+
+(* Nothing to do, Ramdisk is coherent *)
+let barrier ?durable _t =
+  ignore durable;
+  Lwt.return @@ Ok ()
+
